@@ -1,6 +1,7 @@
 package com.geekbang.flink.source;
 
 import com.geekbang.flink.source.custom.CustomRichParallelSource;
+import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -9,6 +10,7 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 
 /**
  * 使用多并行度的source
+ * 利用到了状态机制
  *
  */
 public class StreamingDemoWithMyRichPralalleSource {
@@ -31,10 +33,12 @@ public class StreamingDemoWithMyRichPralalleSource {
         //每2秒钟处理一次数据
         DataStream<Long> sum = num.timeWindowAll(Time.seconds(2)).sum(0);
 
-        //打印结果
-        sum.print().setParallelism(1);
+        //打印结果,多个并行度的情况下，不是每个算子都会输出，而是结果每次只有一个算子进行输出
+        sum.print().setParallelism(2);
 
         String jobName = StreamingDemoWithMyRichPralalleSource.class.getSimpleName();
-        env.execute(jobName);
+        JobExecutionResult result = env.execute(jobName);
+
+        result.getAllAccumulatorResults().forEach((k, v) -> System.out.println("Accumulator: " + k + " : " + v));
     }
 }

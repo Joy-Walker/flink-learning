@@ -105,6 +105,9 @@ public class BroadcastProcessFunctionExample {
 
         @Override
         public void processElement(Long value, ReadOnlyContext ctx, Collector<String> out) throws Exception {
+//            从状态中获取值
+//            ctx.getBroadcastState(descriptor).get(null)
+
         }
 
         @Override

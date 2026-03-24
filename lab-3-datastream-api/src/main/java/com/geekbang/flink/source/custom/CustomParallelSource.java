@@ -4,7 +4,8 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.functions.source.ParallelSourceFunction;
 
 /**
- * 自定义实现一个支持并行度的source
+ * 自定义实现一个支持并行度的source,但是不支持状态
+ * 实现ParallelSourceFunction接口
  */
 public class CustomParallelSource implements ParallelSourceFunction<Tuple2<String, Long>> {
 

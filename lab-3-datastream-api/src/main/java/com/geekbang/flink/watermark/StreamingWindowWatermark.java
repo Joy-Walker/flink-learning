@@ -1,5 +1,6 @@
 package com.geekbang.flink.watermark;
 
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -51,6 +52,7 @@ public class StreamingWindowWatermark {
         });
 
         //抽取timestamp和生成watermark
+
         DataStream<Tuple2<String, Long>> waterMarkStream = inputMap.assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<Tuple2<String, Long>>() {
 
             Long currentMaxTimestamp = 0L;

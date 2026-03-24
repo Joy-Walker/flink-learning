@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
 /**
- *  broadcast分区规则
+ *  broadcast分区规则，将source算子的数据广播给下游的每一个算子，也就是map算子
  */
 public class StreamingDemoWithMyNoPralallelSourceBroadcast {
 
@@ -27,7 +27,7 @@ public class StreamingDemoWithMyNoPralallelSourceBroadcast {
                 System.out.println("线程id："+id+",接收到数据：" + value);
                 return value;
             }
-        });
+        }).setParallelism(10);
 
         //每2秒钟处理一次数据
         DataStream<Long> sum = num.timeWindowAll(Time.seconds(2)).sum(0);

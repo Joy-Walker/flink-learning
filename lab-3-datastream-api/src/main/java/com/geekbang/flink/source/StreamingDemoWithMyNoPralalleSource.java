@@ -32,8 +32,8 @@ public class StreamingDemoWithMyNoPralalleSource {
 
         DataStream<Long> max = num.timeWindowAll(Time.seconds(10)).max(0);
         //打印结果
-        sum.print().setParallelism(1);
-        max.print().setParallelism(1);
+        sum.print("sum:").setParallelism(1);
+        max.print("max:").setParallelism(1);
         String jobName = StreamingDemoWithMyNoPralalleSource.class.getSimpleName();
         env.execute(jobName);
     }

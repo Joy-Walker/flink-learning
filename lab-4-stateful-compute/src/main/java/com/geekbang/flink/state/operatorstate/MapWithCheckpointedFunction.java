@@ -25,6 +25,12 @@ public class MapWithCheckpointedFunction {
 
         private long localCount;
 
+
+        /**
+         * 作业启动或者异常容错时调用
+         * @param context
+         * @throws Exception
+         */
         @Override
         public void initializeState(FunctionInitializationContext context) throws Exception {
 
@@ -38,8 +44,15 @@ public class MapWithCheckpointedFunction {
             };
         }
 
+
+        /**
+         * 执行快照时调用
+         * @param context
+         * @throws Exception
+         */
         @Override
         public void snapshotState(FunctionSnapshotContext context) throws Exception {
+            //将上一次的状态数据清空
             countPerPartition.clear();
             countPerPartition.add(localCount);
         }

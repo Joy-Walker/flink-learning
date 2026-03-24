@@ -47,10 +47,16 @@ public class WindowWordCount {
 
         // make parameters available in the web interface
         env.getConfig().setGlobalJobParameters(params);
-
+        env.setParallelism(1);
         final int windowSize = params.getInt("window", 10);
         final int slideSize = params.getInt("slide", 5);
 
+
+        /**
+         * 先分词，然后进行分组，然后划分窗口，
+         * 窗口大小为windowSize，当窗口中元素个数达到slideSize时，
+         * 触发一次计算，计算整个窗口中的元素个数，并返回
+         */
         DataStream<Tuple2<String, Integer>> counts =
                 // split up the lines in pairs (2-tuples) containing: (word,1)
                 text.flatMap(new WordCount.Tokenizer())

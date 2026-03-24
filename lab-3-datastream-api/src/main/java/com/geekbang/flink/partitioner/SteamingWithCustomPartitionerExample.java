@@ -16,7 +16,6 @@ public class SteamingWithCustomPartitionerExample {
     public static void main(String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(2);
         DataStreamSource<Long> text = env.addSource(new CustomNoParallelSource());
 
         //对数据进行转换，把long类型转成tuple1类型

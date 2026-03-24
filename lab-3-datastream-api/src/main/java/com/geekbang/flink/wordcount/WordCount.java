@@ -19,6 +19,7 @@ package com.geekbang.flink.wordcount;
 
 import com.geekbang.flink.wordcount.util.WordCountData;
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.io.InputFormat;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;

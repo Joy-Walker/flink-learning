@@ -4,6 +4,7 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 /**
  * 自定义实现并行度为1的source，模拟产生从1开始的递增数字
+ *  实现SourceFunction接口即可，只能单线程产生数据
  */
 public class CustomNoParallelSource implements SourceFunction<Long> {
 

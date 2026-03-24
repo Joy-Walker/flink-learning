@@ -33,7 +33,7 @@ public class StreamingFromCollection {
         });
 
         //直接打印
-        num.print().setParallelism(1);
+        num.print().setParallelism(2);
 
         env.execute("StreamingFromCollection");
 
