@@ -52,6 +52,14 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>${flink.dependency.scope}</scope>
+        </dependency>
+
+
 
          <!--        该错误是由于Flink 1.11及以上版本移除了flink-streaming-java对flink-clients的隐式依赖-->
         <dependency>
