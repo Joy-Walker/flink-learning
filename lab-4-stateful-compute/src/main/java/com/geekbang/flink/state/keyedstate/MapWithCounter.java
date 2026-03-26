@@ -8,6 +8,9 @@ import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeutils.base.LongSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.state.StateBackend;
+import org.apache.flink.runtime.state.StateBackendBuilder;
+import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /**
@@ -16,6 +19,10 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 public class MapWithCounter {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        StateBackend stateBackend = new MemoryStateBackend();
+
+        env.setStateBackend(stateBackend);
 
         env.fromElements(Tuple2.of("a", "hello"), Tuple2.of("a", "hello"), Tuple2.of("b", "hello"))
                 .keyBy(0)

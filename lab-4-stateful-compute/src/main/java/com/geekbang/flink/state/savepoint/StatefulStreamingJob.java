@@ -146,7 +146,7 @@ public class StatefulStreamingJob {
 
     public static void main(String[] args) throws Exception {
         final ParameterTool pt = ParameterTool.fromArgs(args);
-        final String checkpointDir = pt.getRequired("checkpoint.dir");
+        final String checkpointDir = "file://E:\\checkpoint";
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStateBackend((StateBackend) new FsStateBackend(checkpointDir));
