@@ -74,6 +74,8 @@ public class StreamingWithSideOutputExample {
             text = env.fromElements(WordCountData.WORDS);
         }
 
+
+
         SingleOutputStreamOperator<Tuple2<String, Integer>> tokenized = text
                 .keyBy(new KeySelector<String, Integer>() {
                     private static final long serialVersionUID = 1L;

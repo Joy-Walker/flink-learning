@@ -37,28 +37,29 @@ public class BroadcastProcessFunctionExample {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
 
-        final DataStream<Long> srcOne = env.generateSequence(0L, 5L)
-                .assignTimestampsAndWatermarks(new CustomWmEmitter<Long>() {
+        final DataStream<Long> srcOne = env.generateSequence(0L, 5L);
+//                .assignTimestampsAndWatermarks(new CustomWmEmitter<Long>() {
+//
+//                    private static final long serialVersionUID = -8500904795760316195L;
+//
+//                    @Override
+//                    public long extractTimestamp(Long element, long previousElementTimestamp) {
+//                        return element;
+//                    }
+//                });
 
-                    private static final long serialVersionUID = -8500904795760316195L;
-
-                    @Override
-                    public long extractTimestamp(Long element, long previousElementTimestamp) {
-                        return element;
-                    }
-                });
-
-        final DataStream<String> srcTwo = env.fromCollection(expected.values())
-                .assignTimestampsAndWatermarks(new CustomWmEmitter<String>() {
-
-                    private static final long serialVersionUID = -2148318224248467213L;
-
-                    @Override
-                    public long extractTimestamp(String element, long previousElementTimestamp) {
-                        return Long.parseLong(element.split(":")[1]);
-                    }
-                });
+        final DataStream<String> srcTwo = env.fromCollection(expected.values());
+//                .assignTimestampsAndWatermarks(new CustomWmEmitter<String>() {
+//
+//                    private static final long serialVersionUID = -2148318224248467213L;
+//
+//                    @Override
+//                    public long extractTimestamp(String element, long previousElementTimestamp) {
+//                        return Long.parseLong(element.split(":")[1]);
+//                    }
+//                });
 
         final BroadcastStream<String> broadcast = srcTwo.broadcast(utterDescriptor);
 
@@ -66,7 +67,7 @@ public class BroadcastProcessFunctionExample {
         final DataStream<String> output = srcOne.connect(broadcast).process(
                 new CustomBroadcastProcessFunction());
 
-        output.print().setParallelism(1);
+        output.print();
 
         env.execute();
 
@@ -103,15 +104,25 @@ public class BroadcastProcessFunctionExample {
             );
         }
 
+        //
         @Override
         public void processElement(Long value, ReadOnlyContext ctx, Collector<String> out) throws Exception {
+            System.out.println("processElement:" + value);
 //            从状态中获取值
-//            ctx.getBroadcastState(descriptor).get(null)
-
+            Iterable<Map.Entry<Long, String>> entries = ctx.getBroadcastState(descriptor).immutableEntries();
+            for (Map.Entry<Long, String> entry : entries) {
+                Long key = entry.getKey();
+                String val = entry.getValue();
+                if(key.equals(value)) {
+                    out.collect("key:" + key + " value:" + value + " broadcast:" + val);
+                }
+            }
         }
 
+        // 存储广播数据
         @Override
         public void processBroadcastElement(String value, Context ctx, Collector<String> out) throws Exception {
+            System.out.println("processBroadcastElement:" + value);
             long key = Long.parseLong(value.split(":")[1]);
             ctx.getBroadcastState(descriptor).put(key, value);
         }

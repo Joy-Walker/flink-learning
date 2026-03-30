@@ -18,12 +18,17 @@
 package com.geekbang.flink.asyncio;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.state.ListState;
+import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.state.FunctionInitializationContext;
+import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.checkpoint.ListCheckpointed;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -60,24 +65,14 @@ public class AsyncIOExample {
 	/**
 	 * A checkpointed source.
 	 */
-	private static class SimpleSource implements SourceFunction<Integer>, ListCheckpointed<Integer> {
+	private static class SimpleSource implements SourceFunction<Integer>, CheckpointedFunction {
 		private static final long serialVersionUID = 1L;
 
 		private volatile boolean isRunning = true;
 		private int counter = 0;
 		private int start = 0;
 
-		@Override
-		public List<Integer> snapshotState(long checkpointId, long timestamp) throws Exception {
-			return Collections.singletonList(start);
-		}
-
-		@Override
-		public void restoreState(List<Integer> state) throws Exception {
-			for (Integer i : state) {
-				this.start = i;
-			}
-		}
+		private transient ListState<Integer> counterState;
 
 		public SimpleSource(int maxNum) {
 			this.counter = maxNum;
@@ -102,6 +97,25 @@ public class AsyncIOExample {
 		@Override
 		public void cancel() {
 			isRunning = false;
+		}
+
+		@Override
+		public void snapshotState(FunctionSnapshotContext context) throws Exception {
+			counterState.clear();
+			counterState.add(counter);
+		}
+
+
+		// 初始化的时候进行调用，或者状态恢复时调用
+		@Override
+		public void initializeState(FunctionInitializationContext context) throws Exception {
+			counterState = context.getOperatorStateStore().getUnionListState(
+				new ListStateDescriptor<>("counter", Integer.class));
+
+			boolean restored = context.isRestored();
+			if(restored) {
+				this.start = counterState.get().iterator().next();
+			}
 		}
 	}
 
