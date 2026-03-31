@@ -1,5 +1,6 @@
 package com.geekbang.flink.watermark;
 
+import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple;
@@ -17,6 +18,7 @@ import org.apache.flink.util.Collector;
 
 import javax.annotation.Nullable;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,35 +53,42 @@ public class StreamingWindowWatermark {
             }
         });
 
+
+
+
+
+        DataStream<Tuple2<String, Long>> waterMarkStream = inputMap.assignTimestampsAndWatermarks(
+                WatermarkStrategy.<Tuple2<String, Long>>forBoundedOutOfOrderness(Duration.ofSeconds(10))
+                .withTimestampAssigner(TimestampAssignerSupplier.of((element, recordTimestamp)-> element.f1)));
         //抽取timestamp和生成watermark
-
-        DataStream<Tuple2<String, Long>> waterMarkStream = inputMap.assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<Tuple2<String, Long>>() {
-
-            Long currentMaxTimestamp = 0L;
-            final Long maxOutOfOrderness = 10000L;// 最大允许的乱序时间是10s
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-            /**
-             * 定义生成watermark的逻辑
-             * 默认100ms被调用一次
-             */
-            @Nullable
-            @Override
-            public Watermark getCurrentWatermark() {
-                return new Watermark(currentMaxTimestamp - maxOutOfOrderness);
-            }
-
-            //定义如何提取timestamp
-            @Override
-            public long extractTimestamp(Tuple2<String, Long> element, long previousElementTimestamp) {
-                long timestamp = element.f1;
-                currentMaxTimestamp = Math.max(timestamp, currentMaxTimestamp);
-                long id = Thread.currentThread().getId();
-                System.out.println("currentThreadId:"+id+",key:"+element.f0+",eventtime:["+element.f1+"|"+sdf.format(element.f1)+"],currentMaxTimestamp:["+currentMaxTimestamp+"|"+
-                        sdf.format(currentMaxTimestamp)+"],watermark:["+getCurrentWatermark().getTimestamp()+"|"+sdf.format(getCurrentWatermark().getTimestamp())+"]");
-                return timestamp;
-            }
-        });
+//
+//        DataStream<Tuple2<String, Long>> waterMarkStream = inputMap.assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<Tuple2<String, Long>>() {
+//
+//            Long currentMaxTimestamp = 0L;
+//            final Long maxOutOfOrderness = 10000L;// 最大允许的乱序时间是10s
+//
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+//            /**
+//             * 定义生成watermark的逻辑
+//             * 默认100ms被调用一次
+//             */
+//            @Nullable
+//            @Override
+//            public Watermark getCurrentWatermark() {
+//                return new Watermark(currentMaxTimestamp - maxOutOfOrderness);
+//            }
+//
+//            //定义如何提取timestamp
+//            @Override
+//            public long extractTimestamp(Tuple2<String, Long> element, long previousElementTimestamp) {
+//                long timestamp = element.f1;
+//                currentMaxTimestamp = Math.max(timestamp, currentMaxTimestamp);
+//                long id = Thread.currentThread().getId();
+//                System.out.println("currentThreadId:"+id+",key:"+element.f0+",eventtime:["+element.f1+"|"+sdf.format(element.f1)+"],currentMaxTimestamp:["+currentMaxTimestamp+"|"+
+//                        sdf.format(currentMaxTimestamp)+"],watermark:["+getCurrentWatermark().getTimestamp()+"|"+sdf.format(getCurrentWatermark().getTimestamp())+"]");
+//                return timestamp;
+//            }
+//        });
 
         DataStream<String> window = waterMarkStream.keyBy(0)
                 .window(TumblingEventTimeWindows.of(Time.seconds(3)))//按照消息的EventTime分配窗口，和调用TimeWindow效果一样

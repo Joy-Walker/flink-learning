@@ -1,5 +1,6 @@
 package com.geekbang.flink.state.broadcaststate;
 
+import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.configuration.Configuration;
@@ -35,6 +36,9 @@ public class BroadcastProcessFunctionExample {
         expected.put(4L, "test:4");
         expected.put(5L, "test:5");
 
+
+        ListStateDescriptor<String> brodecastState = new ListStateDescriptor<>("brodecast_state", BasicTypeInfo.STRING_TYPE_INFO);
+
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.setParallelism(1);
@@ -61,6 +65,7 @@ public class BroadcastProcessFunctionExample {
 //                    }
 //                });
 
+        // broadcast参数必须是一个mapStateDescriptor
         final BroadcastStream<String> broadcast = srcTwo.broadcast(utterDescriptor);
 
         // the timestamp should be high enough to trigger the timer after all the elements arrive.
