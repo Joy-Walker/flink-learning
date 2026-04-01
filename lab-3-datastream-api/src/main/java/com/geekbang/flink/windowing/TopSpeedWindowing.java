@@ -60,6 +60,7 @@ public class TopSpeedWindowing {
 		DataStream<Tuple4<Integer, Integer, Double, Long>> topSpeeds = carData
 				.assignTimestampsAndWatermarks(new CarTimestamp())
 				.keyBy(0)
+				// 使用全局窗口，需要自定义触发器，否则窗口一直不触发
 				.window(GlobalWindows.create())
 				.evictor(TimeEvictor.of(Time.of(evictionSec, TimeUnit.SECONDS)))
 				.trigger(DeltaTrigger.of(triggerMeters,

@@ -54,66 +54,69 @@ public class StreamingWindowWatermark3 {
                 .evictor(new Evictor<Tuple2<String, Long>, TimeWindow>() {
                     @Override
                     public void evictBefore(Iterable<TimestampedValue<Tuple2<String, Long>>> elements, int size, TimeWindow window, EvictorContext evictorContext) {
+                        int count = 0;
                         for (TimestampedValue<Tuple2<String, Long>> element : elements) {
-                            System.out.println("evictBefore element:" + element);
+                            count++;
                         }
-
+                        System.out.println("evictBefore count:" + count + " window:" + window);
                     }
 
                     @Override
                     public void evictAfter(Iterable<TimestampedValue<Tuple2<String, Long>>> elements, int size, TimeWindow window, EvictorContext evictorContext) {
+                        int count = 0;
                         for (TimestampedValue<Tuple2<String, Long>> element : elements) {
-                            System.out.println("evictAfter element:" + element);
+                            count++;
                         }
+                        System.out.println("evictAfter count:" + count + " window:" + window);
                     }
                 })
-                .trigger(new Trigger<Tuple2<String, Long>, TimeWindow>() {
-
-                    // 每来一个元素，都会调用
-
-                    /**
-                     *
-                     * @param element The element that arrived.
-                     * @param timestamp The timestamp of the element that arrived.
-                     * @param window The window to which the element is being added.
-                     * @param ctx A context object that can be used to register timer callbacks.
-                     * @return
-                     * @throws Exception
-                     */
-                    @Override
-                    public TriggerResult onElement(Tuple2<String, Long> element, long timestamp, TimeWindow window, TriggerContext ctx) throws Exception {
-                        System.out.println("onElement 调用" + "element: " + element + " timestamp:" + timestamp + " window:" + window);
-                        return TriggerResult.CONTINUE;
-                    }
-
-                    @Override
-                    public TriggerResult onProcessingTime(long time, TimeWindow window, TriggerContext ctx) throws Exception {
-                        System.out.println("onProcessingTime 调用" + "time:" + time + " window:" + window);
-                        return TriggerResult.CONTINUE;
-
-                    }
-
-                    //  窗口闭合的时候触发一次
-
-                    /**
-                     *
-                     * @param time The timestamp at which the timer fired.
-                     * @param window The window for which the timer fired.
-                     * @param ctx A context object that can be used to register timer callbacks.
-                     * @return
-                     * @throws Exception
-                     */
-                    @Override
-                    public TriggerResult onEventTime(long time, TimeWindow window, TriggerContext ctx) throws Exception {
-                        System.out.println("onEventTime 调用" + "element: "  + " window:" + window);
-                        return TriggerResult.FIRE_AND_PURGE;
-                    }
-
-                    @Override
-                    public void clear(TimeWindow window, TriggerContext ctx) throws Exception {
-                        System.out.println("clear 调用" + " window:" + window);
-                    }
-                })
+//                .trigger(new Trigger<Tuple2<String, Long>, TimeWindow>() {
+//
+//                    // 每来一个元素，都会调用
+//
+//                    /**
+//                     *
+//                     * @param element The element that arrived.
+//                     * @param timestamp The timestamp of the element that arrived.
+//                     * @param window The window to which the element is being added.
+//                     * @param ctx A context object that can be used to register timer callbacks.
+//                     * @return
+//                     * @throws Exception
+//                     */
+//                    @Override
+//                    public TriggerResult onElement(Tuple2<String, Long> element, long timestamp, TimeWindow window, TriggerContext ctx) throws Exception {
+//                        System.out.println("onElement 调用" + "element: " + element + " timestamp:" + timestamp + " window:" + window);
+//                        return TriggerResult.CONTINUE;
+//                    }
+//
+//                    @Override
+//                    public TriggerResult onProcessingTime(long time, TimeWindow window, TriggerContext ctx) throws Exception {
+//                        System.out.println("onProcessingTime 调用" + "time:" + time + " window:" + window);
+//                        return TriggerResult.CONTINUE;
+//
+//                    }
+//
+//                    //  窗口闭合的时候触发一次
+//
+//                    /**
+//                     *
+//                     * @param time The timestamp at which the timer fired.
+//                     * @param window The window for which the timer fired.
+//                     * @param ctx A context object that can be used to register timer callbacks.
+//                     * @return
+//                     * @throws Exception
+//                     */
+//                    @Override
+//                    public TriggerResult onEventTime(long time, TimeWindow window, TriggerContext ctx) throws Exception {
+//                        System.out.println("onEventTime 调用" + "element: "  + " window:" + window);
+//                        return TriggerResult.FIRE_AND_PURGE;
+//                    }
+//
+//                    @Override
+//                    public void clear(TimeWindow window, TriggerContext ctx) throws Exception {
+//                        System.out.println("clear 调用" + " window:" + window);
+//                    }
+//                })
                 .apply(new AllWindowFunction<Tuple2<String, Long>, String, TimeWindow>() {
                     @Override
                     public void apply(TimeWindow window, Iterable<Tuple2<String, Long>> values, Collector<String> out) throws Exception {
@@ -126,7 +129,7 @@ public class StreamingWindowWatermark3 {
                     }
                 });
 
-//        windowStream.print();
+        windowStream.print();
         env.execute();
 
 
